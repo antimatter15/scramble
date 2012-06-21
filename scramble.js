@@ -73,8 +73,7 @@ xhr.onload = function() {
   var header, list, path, word;
   words = xhr.responseText.split('\n');
   header = words.splice(0, 1)[0];
-  console.time("blah");
-  list = (function() {
+  return list = (function() {
     var _i, _len, _ref, _ref1, _results;
     _ref = solve();
     _results = [];
@@ -89,8 +88,6 @@ xhr.onload = function() {
     }
     return _results;
   })();
-  console.timeEnd("blah");
-  return console.log(list.length, Object.keys(wordmap));
 };
 
 xhr.send(null);

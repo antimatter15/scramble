@@ -41,7 +41,7 @@ xhr.onload = ->
 	words = xhr.responseText.split '\n'
 	header = words.splice(0,1)[0]
 	#console.timeEnd("Wordmap Buliding")
-	console.time("blah")
+	#console.time("blah")
 	list = (for [word, path] in solve()
 		#console.log word, path
 		if wordmap[word]
@@ -50,10 +50,10 @@ xhr.onload = ->
 			wordmap[word] = [path]
 		word
 	)
-	console.timeEnd("blah")
+	#console.timeEnd("blah")
 	# for n in [0..20]
 	# 	console.log n, (Object.keys(wordmap).filter (e) -> e.length == n).length, (list.filter (e) -> e.length == n).length
-	console.log list.length, Object.keys(wordmap)
+	#console.log list.length, Object.keys(wordmap)
 	# document.getElementById('works').innerHTML = list.sort((b, a) -> weightWord(a) - weightWord(b)).join('\n')
 	
 xhr.send null
