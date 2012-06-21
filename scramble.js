@@ -4,8 +4,6 @@ var attempts, board, c, current_letter, current_score, div, down, el, end, expan
 
 grid = "SERS PATG LINE SERS".split(' ');
 
-grid = 'GREP TNAL ESIT DRES'.split(' ');
-
 grid = (function() {
   var _i, _len, _results;
   _results = [];
@@ -90,7 +88,8 @@ xhr.onload = function() {
     }
     return _results;
   })();
-  return console.timeEnd("blah");
+  console.timeEnd("blah");
+  return console.log(list.length, Object.keys(wordmap));
 };
 
 xhr.send(null);
@@ -110,8 +109,8 @@ end = +(new Date) + 3 * 60 * 1000;
 setInterval(function() {
   var time;
   time = formatTime(end - new Date);
-  document.getElementById('timer').innerText = time;
-  return document.getElementById('score').innerText = current_score;
+  document.getElementById('timer').innerHTML = time;
+  return document.getElementById('score').innerHTML = current_score;
 }, 1000);
 
 formatTime = function(msec) {
@@ -195,7 +194,7 @@ pointerRelease = function() {
     document.getElementById('word').className = 'old';
   } else if (hasWord(word)) {
     current_score += weightWord(word);
-    document.getElementById('score').innerText = current_score;
+    document.getElementById('score').innerHTML = current_score;
     document.getElementById('word').className = 'good';
   } else {
     document.getElementById('word').className = 'bad';
@@ -208,14 +207,14 @@ makeSquare = function(text) {
   var letter, u, weight;
   letter = document.createElement('div');
   letter.className = "square";
-  letter.innerText = text.slice(0, 1);
+  letter.innerHTML = text.slice(0, 1);
   weight = document.createElement('div');
   weight.className = 'weight';
-  weight.innerText = weights[text];
+  weight.innerHTML = weights[text];
   letter.appendChild(weight);
   if (text === "QU") {
     u = document.createElement('span');
-    u.innerText = 'u';
+    u.innerHTML = 'u';
     u.style.fontSize = '20px';
     letter.appendChild(u);
   }
@@ -240,11 +239,11 @@ overletter = function(row, col, el) {
         }
         return _results;
       })()).join('');
-      text.innerText = word;
+      text.innerHTML = word;
       document.getElementById('word').appendChild(text);
       score = document.createElement('div');
       score.className = 'score';
-      score.innerText = weightWord(word);
+      score.innerHTML = weightWord(word);
       document.getElementById('word').appendChild(score);
       return el.className = 'square hover';
     }

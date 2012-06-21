@@ -4,7 +4,7 @@
 
 #grid = [["L","QU","R","E"],["S","L","U","S"],["A","T","I","C"],["N","R","E","N"]]
 grid = "SERS PATG LINE SERS".split(' ')
-grid = 'GREP TNAL ESIT DRES'.split(' ')
+#grid = 'GREP TNAL ESIT DRES'.split(' ')
 
 #grid = "STNG EIAE DRLS SEPO".split(' ')
 #grid = ""
@@ -48,8 +48,8 @@ xhr.onload = ->
 	console.timeEnd("blah")
 	# for n in [0..20]
 	# 	console.log n, (Object.keys(wordmap).filter (e) -> e.length == n).length, (list.filter (e) -> e.length == n).length
-	# console.log list.length, Object.keys(wordmap)
-	# document.getElementById('works').innerText = list.sort((b, a) -> weightWord(a) - weightWord(b)).join('\n')
+	console.log list.length, Object.keys(wordmap)
+	# document.getElementById('works').innerHTML = list.sort((b, a) -> weightWord(a) - weightWord(b)).join('\n')
 	
 
 xhr.send null
@@ -64,8 +64,8 @@ end = +new Date + 3 * 60 * 1000
 
 setInterval(->
 	time = formatTime(end - new Date)
-	document.getElementById('timer').innerText = time
-	document.getElementById('score').innerText = current_score
+	document.getElementById('timer').innerHTML = time
+	document.getElementById('score').innerHTML = current_score
 ,1000)
 
 formatTime = (msec) ->
@@ -124,7 +124,7 @@ pointerRelease = ->
 		document.getElementById('word').className = 'old'
 	else if hasWord word
 		current_score += weightWord word
-		document.getElementById('score').innerText = current_score
+		document.getElementById('score').innerHTML = current_score
 		document.getElementById('word').className = 'good'
 	else
 		document.getElementById('word').className = 'bad'
@@ -136,15 +136,15 @@ pointerRelease = ->
 makeSquare = (text) ->
 	letter = document.createElement('div')
 	letter.className = "square"
-	letter.innerText = text.slice(0, 1)
+	letter.innerHTML = text.slice(0, 1)
 
 	weight = document.createElement('div')
 	weight.className = 'weight'
-	weight.innerText = weights[text]
+	weight.innerHTML = weights[text]
 	letter.appendChild weight
 	if text == "QU"
 		u = document.createElement('span')
-		u.innerText = 'u'
+		u.innerHTML = 'u'
 		u.style.fontSize = '20px'
 		letter.appendChild u
 
@@ -159,11 +159,11 @@ overletter = (row, col, el) ->
 			text = document.createElement('div')
 			text.className = 'word'
 			word = (grid[r][c] for [r, c] in path).join('')
-			text.innerText = word
+			text.innerHTML = word
 			document.getElementById('word').appendChild text
 			score = document.createElement('div')
 			score.className = 'score'
-			score.innerText = weightWord(word)
+			score.innerHTML = weightWord(word)
 			document.getElementById('word').appendChild score
 			el.className = 'square hover'
 
