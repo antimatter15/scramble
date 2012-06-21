@@ -56,7 +56,6 @@ xhr.onload = ->
 	console.log list.length, Object.keys(wordmap)
 	# document.getElementById('works').innerHTML = list.sort((b, a) -> weightWord(a) - weightWord(b)).join('\n')
 	
-
 xhr.send null
 
 down = false
@@ -68,6 +67,26 @@ attempts = []
 
 end = +new Date + 3 * 60 * 1000 
 
+
+phantom = ->
+	wordlist = (Object.keys(wordmap).sort (a, b) ->
+		weightWord(a) - weightWord(b))
+	plan = []
+	typeWord = ->
+		if plan.length == 0
+			clickmode = false
+			pointerRelease()
+			word = wordlist.pop() 
+			plan = (a for a in wordmap[word][0])
+			setTimeout typeWord, 762
+		else
+			[y, x] = plan.shift()
+			clickmode = true
+			down = true
+			overletter(x, y, document.getElementById('sq-r'+x+'c'+y))
+			down = false
+			setTimeout typeWord, 82
+	typeWord()
 
 sum = (arr) ->
 	s = 0
@@ -190,6 +209,7 @@ overletter = (row, col, el) ->
 	unless clickmode
 		current_letter = [row, col, el]
 	if down
+		document.getElementById('word').className = ''
 		if !inPath([row, col], path) and (path.length == 0 or isAdjacent([row, col], path[path.length - 1])) and grid[row][col]
 			if path.length != 0
 				[lr, lc] = path[path.length - 1]
@@ -253,7 +273,6 @@ pointerRelease = ->
 		line.parentNode.removeChild line
 		
 	if word.length > 1
-		console.log word
 		if word in attempts
 			document.getElementById('word').className = 'old'
 		else if hasWord word
@@ -262,7 +281,6 @@ pointerRelease = ->
 			document.getElementById('word').className = 'good'
 		else
 			document.getElementById('word').className = 'bad'
-		console.log word
 		attempts.push word
 	current_letter = null
 
@@ -311,6 +329,7 @@ for row, r in grid
 			square = makeSquare(letter)
 			square.row = r
 			square.col = c
+			square.id = 'sq-r'+r+'c'+c
 			square.addEventListener "mouseover", (e) ->
 				overletter(r, c, square)
 				e.preventDefault()
