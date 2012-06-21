@@ -56,7 +56,22 @@ xhr.send null
 
 down = false
 current_letter = null
+current_score = 0
 path = []
+attempts = []
+
+end = +new Date + 3 * 60 * 1000 
+
+setInterval(->
+	time = formatTime(end - new Date)
+	document.getElementById('timer').innerText = time
+	document.getElementById('score').innerText = current_score
+,1000)
+
+formatTime = (msec) ->
+	sec = Math.floor(msec/1000)
+	min = Math.floor(sec/60)
+	return min + ":" + (sec % 60)
 
 document.body.addEventListener "mousedown", (e) ->
 	pointerPress()
@@ -104,13 +119,19 @@ pointerRelease = ->
 		el.className = 'square'
 	word = (grid[x][y] for [x,y] in path).join('')
 	path = []
-	if hasWord word
+	
+	if word in attempts
+		document.getElementById('word').className = 'old'
+	else if hasWord word
+		current_score += weightWord word
+		document.getElementById('score').innerText = current_score
 		document.getElementById('word').className = 'good'
 	else
 		document.getElementById('word').className = 'bad'
+	attempts.push word
 	current_letter = null
 
-	
+
 
 makeSquare = (text) ->
 	letter = document.createElement('div')
