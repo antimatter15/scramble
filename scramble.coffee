@@ -9,20 +9,19 @@ grid = "SERS PATG LINE SERS".split(' ')
 #grid = "STNG EIAE DRLS SEPO".split(' ')
 #grid = ""
 
-grid = (((if el is "Q" then "QU" else el) for el in row) for row in grid)
-
 nrows = grid.length
 ncols = grid[0].length
+
+# substitute loan Q's
+grid = (((if el is "Q" then "QU" else el) for el in row) for row in grid)
 
 board = document.getElementById('board')
 
 wordmap = {}
 prefixes = {}
 words = null
-xhr = new XMLHttpRequest()
-xhr.open 'get', 'dictionary.txt', true
 
-
+#scramble with friends has specific letter weights
 weights = {
 	A: 1, B: 4, C: 4, D: 2, E: 1, F: 4, G: 3,
 	H: 3, I: 1, J: 10, K: 5, L: 2, M: 4, N: 2,
@@ -30,13 +29,19 @@ weights = {
 	V: 5, W: 4, X: 8, Y: 3, Z: 10
 }
 
+
+
+
+xhr = new XMLHttpRequest()
+xhr.open 'get', 'dictionary.txt', true
+wordmap = {}
+
 xhr.onload = ->
 	#console.time("Wordmap Buliding")
 	words = xhr.responseText.split '\n'
 	header = words.splice(0,1)[0]
 	#console.timeEnd("Wordmap Buliding")
 	console.time("blah")
-	wordmap = {}
 	list = (for [word, path] in solve()
 		#console.log word, path
 		if wordmap[word]
@@ -65,16 +70,25 @@ end = +new Date + 3 * 60 * 1000
 setInterval(->
 	time = formatTime(end - new Date)
 	document.getElementById('timer').innerHTML = time
-	document.getElementById('score').innerHTML = current_score
+	document.getElementById('score').innerHTML = current_score + '/' + sum(weightWord(word) for word in Object.keys(wordmap))
 ,1000)
 
 formatTime = (msec) ->
+	if msec < 0
+		return "Time's Up!"
+	pad = (num) ->
+		for [0...(2-(num + "").length)]
+			num = "0" + num
+		num
 	sec = Math.floor(msec/1000)
 	min = Math.floor(sec/60)
-	return min + ":" + (sec % 60)
+	return min + ":" + pad(sec % 60)
 
 document.body.addEventListener "mousedown", (e) ->
 	pointerPress()
+	e.preventDefault()
+
+document.getElementById('board').addEventListener "contextmenu", (e) ->
 	e.preventDefault()
 
 document.body.addEventListener "mousedown", (e) ->
@@ -102,16 +116,17 @@ document.body.addEventListener "mouseup", (e) ->
 document.body.addEventListener "touchmove", (e) ->
 	if e and e.touches and e.touches[0]
 		el = document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY)
-
-		overletter(el.row, el.col, el) if el and el.row? and el.col?
+		overletter(el.row, el.col, el) if el and el.row? and el.col?		
 	e.preventDefault()
 	
 
+sum = (arr) ->
+	s = 0
+	s += n for n in arr
+	s
+
 weightWord = (word) ->
-	sum = 0
-	for letter in word
-		sum += weights[letter]
-	return sum
+	sum(weights[letter] for letter in word)
 
 pointerRelease = ->	
 	down = false
@@ -119,16 +134,18 @@ pointerRelease = ->
 		el.className = 'square'
 	word = (grid[x][y] for [x,y] in path).join('')
 	path = []
+	for line in document.querySelectorAll('.line')
+		line.parentNode.removeChild line
 	
 	if word in attempts
 		document.getElementById('word').className = 'old'
 	else if hasWord word
 		current_score += weightWord word
-		document.getElementById('score').innerHTML = current_score
+		document.getElementById('score').innerHTML = current_score + '/' + sum(weightWord(word) for word in Object.keys(wordmap))
 		document.getElementById('word').className = 'good'
 	else
 		document.getElementById('word').className = 'bad'
-	attempts.push word
+	attempts.push word if word
 	current_letter = null
 
 
@@ -150,10 +167,45 @@ makeSquare = (text) ->
 
 	return letter
 
+position = (el) ->
+	#stolen from quirksmode
+	left = 0
+	top = 0
+	while el.offsetParent
+		left += el.offsetLeft
+		top += el.offsetTop
+		el = el.offsetParent
+	[left, top]
+
 overletter = (row, col, el) ->
 	current_letter = [row, col, el]
 	if down
 		if !inPath([row, col], path) and (path.length == 0 or isAdjacent([row, col], path[path.length - 1])) and grid[row][col]
+			if path.length != 0
+				[lr, lc] = path[path.length - 1]
+
+				line = document.createElement('div')
+				line.className = 'line'
+				[left, top] = position el
+				[dx, dy] = [col - lc, row - lr]
+				oldleft = left - 74 * dx
+				oldtop = top - 74 * dy
+				l = left/2 + oldleft/2 + 27
+				t = top/2 + oldtop/2 + 27
+
+				if dy == 1 and dx == -1 or dy == -1 and dx == 1
+					line.style.webkitTransform = 'translate(-5px, -27px) rotate(45deg)'
+				if dy == 1 and dx == 0 or dy == -1 and dx == 0
+					line.style.webkitTransform = 'translate(-5px, -27px) rotate(0deg)'
+				if dy == 0 and dx == -1 or dy == 0 and dx == 1
+					line.style.webkitTransform = 'translate(-5px, -27px) rotate(-90deg)'
+				if dy == -1 and dx == -1 or dy == 1 and dx == 1
+					line.style.webkitTransform = 'translate(-5px, -27px) rotate(-45deg)'
+			
+
+				line.style.top = t + 'px'
+				line.style.left = l  + 'px'
+				board.appendChild line
 			path.push [row, col]
 			document.getElementById('word').innerHTML = ''
 			text = document.createElement('div')
@@ -166,6 +218,7 @@ overletter = (row, col, el) ->
 			score.innerHTML = weightWord(word)
 			document.getElementById('word').appendChild score
 			el.className = 'square hover'
+
 
 inPath = (needle, haystack) ->
 	for i in haystack

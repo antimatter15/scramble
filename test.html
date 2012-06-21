@@ -13,7 +13,7 @@
 	height: 40px;
 	padding-top: 4px;
 	padding-bottom: 6px;
-	-webkit-transition: background-color 0.5s, border-color 0.5s, -webkit-transform 0.5s;
+	-webkit-transition: background-color 0.5s, border-color 0.5s, -webkit-transform 5s;
 	border-color: #D5D5D3;
 	background-color: #EEEEEC;
 	vertical-align: middle;
@@ -39,7 +39,7 @@
 }
 
 .square {
-	
+	-webkit-transform: rotate(0) scale(1);
 	width: 50px;
 	
 }
@@ -52,6 +52,18 @@
 	margin-bottom: -12px;
 }
 
+
+.line {
+	background-color: #BDBD69; 
+	width: 10px;
+	height: 54px; /* 54 * sqrt(2) */
+	border: 3px solid #73881E;
+	position: absolute;
+	-webkit-transform: rotate(0deg);
+	-webkit-transition: -webkit-transform 0.2s;
+	z-index: -3;
+	opacity: 0.5;
+}
 
 .score {
 	font-size: 10px;
@@ -92,6 +104,7 @@
 .square.hover {
 	background-color: #eec;
 	border-color: #dd7;
+
 	-webkit-animation-name: wobble;
 	-webkit-animation-duration: 0.3s;
 	-webkit-animation-iteration-count: infinite;
@@ -201,7 +214,7 @@
 	<div id="word"></div>
 	<div id="board"></div>
 </center>
-
+<div class="line"></div>
 <div id="works"></div>
 
 
