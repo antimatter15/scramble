@@ -182,7 +182,8 @@ position = (el) ->
 		el = el.offsetParent
 	[left, top]
 
-
+updateScore = ->
+	document.getElementById('score').innerHTML = current_score + '/' + sum(weightWord(word) for word in Object.keys(wordmap))
 
 
 overletter = (row, col, el) ->
@@ -252,22 +253,23 @@ pointerRelease = ->
 		line.parentNode.removeChild line
 		
 	if word.length > 1
+		console.log word
 		if word in attempts
 			document.getElementById('word').className = 'old'
 		else if hasWord word
 			current_score += weightWord word
-			document.getElementById('score').innerHTML = current_score + '/' + sum(weightWord(word) for word in Object.keys(wordmap))
+			updateScore()
 			document.getElementById('word').className = 'good'
 		else
 			document.getElementById('word').className = 'bad'
-
-		attempts.push word if word
+		console.log word
+		attempts.push word
 	current_letter = null
 
 setInterval(->
 	time = formatTime(end - new Date)
 	document.getElementById('timer').innerHTML = time
-	document.getElementById('score').innerHTML = current_score + '/' + sum(weightWord(word) for word in Object.keys(wordmap))
+	updateScore()
 ,1000)
 
 document.getElementById('word').addEventListener 'click', (e) ->
