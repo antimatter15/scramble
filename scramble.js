@@ -356,9 +356,7 @@ pointerPress = function() {
 
 pointerRelease = function() {
   var line, word, x, y, _i, _j, _len, _len1, _ref, _ref1;
-  if (!current_letter) {
-    clickmode = true;
-    down = false;
+  if (clickmode === true) {
     return;
   }
   down = false;
@@ -382,26 +380,28 @@ pointerRelease = function() {
     line = _ref1[_j];
     line.parentNode.removeChild(line);
   }
-  if (__indexOf.call(attempts, word) >= 0) {
-    document.getElementById('word').className = 'old';
-  } else if (hasWord(word)) {
-    current_score += weightWord(word);
-    document.getElementById('score').innerHTML = current_score + '/' + sum((function() {
-      var _k, _len2, _ref2, _results;
-      _ref2 = Object.keys(wordmap);
-      _results = [];
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        word = _ref2[_k];
-        _results.push(weightWord(word));
-      }
-      return _results;
-    })());
-    document.getElementById('word').className = 'good';
-  } else {
-    document.getElementById('word').className = 'bad';
-  }
-  if (word) {
-    attempts.push(word);
+  if (word.length > 1) {
+    if (__indexOf.call(attempts, word) >= 0) {
+      document.getElementById('word').className = 'old';
+    } else if (hasWord(word)) {
+      current_score += weightWord(word);
+      document.getElementById('score').innerHTML = current_score + '/' + sum((function() {
+        var _k, _len2, _ref2, _results;
+        _ref2 = Object.keys(wordmap);
+        _results = [];
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          word = _ref2[_k];
+          _results.push(weightWord(word));
+        }
+        return _results;
+      })());
+      document.getElementById('word').className = 'good';
+    } else {
+      document.getElementById('word').className = 'bad';
+    }
+    if (word) {
+      attempts.push(word);
+    }
   }
   return current_letter = null;
 };
@@ -424,7 +424,7 @@ setInterval(function() {
 
 document.getElementById('word').addEventListener('click', function(e) {
   if (clickmode) {
-    current_letter = 42;
+    clickmode = false;
     return pointerRelease();
   }
 });
@@ -480,6 +480,15 @@ for (r = _i = 0, _len = grid.length; _i < _len; r = ++_i) {
     });
     square.addEventListener("mousedown", function(e) {
       overletter(r, c, square);
+      return e.preventDefault();
+    });
+    square.addEventListener("click", function(e) {
+      if (down === false || clickmode === true) {
+        clickmode = true;
+        down = true;
+        overletter(r, c, square);
+        down = false;
+      }
       return e.preventDefault();
     });
     return div.appendChild(square);

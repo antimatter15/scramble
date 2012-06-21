@@ -238,9 +238,7 @@ pointerPress = ->
 
 
 pointerRelease = ->	
-	if !current_letter
-		clickmode = true
-		down = false
+	if clickmode is true
 		return
 
 	down = false
@@ -252,17 +250,18 @@ pointerRelease = ->
 	
 	for line in document.querySelectorAll('.line')
 		line.parentNode.removeChild line
-	
-	if word in attempts
-		document.getElementById('word').className = 'old'
-	else if hasWord word
-		current_score += weightWord word
-		document.getElementById('score').innerHTML = current_score + '/' + sum(weightWord(word) for word in Object.keys(wordmap))
-		document.getElementById('word').className = 'good'
-	else
-		document.getElementById('word').className = 'bad'
+		
+	if word.length > 1
+		if word in attempts
+			document.getElementById('word').className = 'old'
+		else if hasWord word
+			current_score += weightWord word
+			document.getElementById('score').innerHTML = current_score + '/' + sum(weightWord(word) for word in Object.keys(wordmap))
+			document.getElementById('word').className = 'good'
+		else
+			document.getElementById('word').className = 'bad'
 
-	attempts.push word if word
+		attempts.push word if word
 	current_letter = null
 
 setInterval(->
@@ -273,7 +272,7 @@ setInterval(->
 
 document.getElementById('word').addEventListener 'click', (e) ->
 	if clickmode
-		current_letter = 42 #tricky hack
+		clickmode = false
 		pointerRelease()
 
 document.body.addEventListener "mousedown", (e) ->
@@ -316,5 +315,12 @@ for row, r in grid
 			square.addEventListener "mousedown", (e) ->
 				overletter(r, c, square)
 				e.preventDefault()
-			
+			square.addEventListener "click", (e) ->
+				if down is false or clickmode is true
+					clickmode = true
+					down = true
+					overletter(r, c, square)
+					down = false
+				e.preventDefault()
+
 			div.appendChild square
