@@ -60,6 +60,7 @@ xhr.onload = ->
 xhr.send null
 
 down = false
+clickmode = false
 current_letter = null
 current_score = 0
 path = []
@@ -185,7 +186,8 @@ position = (el) ->
 
 
 overletter = (row, col, el) ->
-	current_letter = [row, col, el]
+	unless clickmode
+		current_letter = [row, col, el]
 	if down
 		if !inPath([row, col], path) and (path.length == 0 or isAdjacent([row, col], path[path.length - 1])) and grid[row][col]
 			if path.length != 0
@@ -228,13 +230,19 @@ overletter = (row, col, el) ->
 
 pointerPress = ->
 	down = true
-	document.getElementById('word').innerHTML = ''
+	unless clickmode
+		document.getElementById('word').innerHTML = ''
 	document.getElementById('word').className = ''
 	overletter.apply(this, current_letter) if current_letter
 	current_letter = null
 
 
 pointerRelease = ->	
+	if !current_letter
+		clickmode = true
+		down = false
+		return
+
 	down = false
 	for el in document.querySelectorAll('.square')
 		el.className = 'square'
@@ -263,7 +271,14 @@ setInterval(->
 	document.getElementById('score').innerHTML = current_score + '/' + sum(weightWord(word) for word in Object.keys(wordmap))
 ,1000)
 
+document.getElementById('word').addEventListener 'click', (e) ->
+	if clickmode
+		current_letter = 42 #tricky hack
+		pointerRelease()
+
 document.body.addEventListener "mousedown", (e) ->
+	el = document.elementFromPoint(e.clientX, e.clientY)
+	current_letter = [el.row, el.col, el] if el and el.row? and el.col?
 	pointerPress()
 	e.preventDefault()
 
@@ -283,7 +298,7 @@ document.body.addEventListener "mouseup", (e) ->
 document.body.addEventListener "touchmove", (e) ->
 	if e and e.touches and e.touches[0]
 		el = document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY)
-		overletter(el.row, el.col, el) if el and el.row? and el.col?		
+		overletter(el.row, el.col, el) if el and el.row? and el.col?
 	e.preventDefault()
 	
 
