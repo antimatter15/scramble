@@ -107,85 +107,6 @@ attempts = [];
 
 end = +(new Date) + 3 * 60 * 1000;
 
-setInterval(function() {
-  var time, word;
-  time = formatTime(end - new Date);
-  document.getElementById('timer').innerHTML = time;
-  return document.getElementById('score').innerHTML = current_score + '/' + sum((function() {
-    var _i, _len, _ref, _results;
-    _ref = Object.keys(wordmap);
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      word = _ref[_i];
-      _results.push(weightWord(word));
-    }
-    return _results;
-  })());
-}, 1000);
-
-formatTime = function(msec) {
-  var min, pad, sec;
-  if (msec < 0) {
-    return "Time's Up!";
-  }
-  pad = function(num) {
-    var _i, _ref;
-    for (_i = 0, _ref = 2 - (num + "").length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--) {
-      num = "0" + num;
-    }
-    return num;
-  };
-  sec = Math.floor(msec / 1000);
-  min = Math.floor(sec / 60);
-  return min + ":" + pad(sec % 60);
-};
-
-document.body.addEventListener("mousedown", function(e) {
-  pointerPress();
-  return e.preventDefault();
-});
-
-document.getElementById('board').addEventListener("contextmenu", function(e) {
-  return e.preventDefault();
-});
-
-document.body.addEventListener("mousedown", function(e) {
-  return e.preventDefault();
-});
-
-document.body.addEventListener("touchstart", function(e) {
-  pointerPress();
-  return e.preventDefault();
-});
-
-pointerPress = function() {
-  down = true;
-  document.getElementById('word').innerHTML = '';
-  document.getElementById('word').className = '';
-  if (current_letter) {
-    overletter.apply(this, current_letter);
-  }
-  return current_letter = null;
-};
-
-document.body.addEventListener("touchend", function(e) {
-  return pointerRelease();
-});
-
-document.body.addEventListener("mouseup", function(e) {
-  return pointerRelease();
-});
-
-document.body.addEventListener("touchmove", function(e) {
-  if (e && e.touches && e.touches[0]) {
-    el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-    if (el && (el.row != null) && (el.col != null)) {
-      overletter(el.row, el.col, el);
-    }
-  }
-  return e.preventDefault();
-});
-
 sum = function(arr) {
   var n, s, _i, _len;
   s = 0;
@@ -207,6 +128,224 @@ weightWord = function(word) {
     }
     return _results;
   })());
+};
+
+inPath = function(needle, haystack) {
+  var i, _i, _len;
+  for (_i = 0, _len = haystack.length; _i < _len; _i++) {
+    i = haystack[_i];
+    if (i[0] === needle[0] && i[1] === needle[1]) {
+      return true;
+    }
+  }
+  return false;
+};
+
+isAdjacent = function(first, second) {
+  return Math.abs(first[0] - second[0]) <= 1 && Math.abs(first[1] - second[1]) <= 1;
+};
+
+neighbors = function(_arg) {
+  var matches, nx, ny, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
+  x = _arg[0], y = _arg[1];
+  matches = [];
+  for (nx = _i = _ref = Math.max(0, x - 1), _ref1 = Math.min(x + 2, ncols); _ref <= _ref1 ? _i < _ref1 : _i > _ref1; nx = _ref <= _ref1 ? ++_i : --_i) {
+    for (ny = _j = _ref2 = Math.max(0, y - 1), _ref3 = Math.min(y + 2, nrows); _ref2 <= _ref3 ? _j < _ref3 : _j > _ref3; ny = _ref2 <= _ref3 ? ++_j : --_j) {
+      matches.push([nx, ny]);
+    }
+  }
+  return matches;
+};
+
+hasPrefix = function(prefix) {
+  var max, mid, min;
+  if (prefix.length === 1) {
+    return true;
+  }
+  min = 0;
+  max = words.length - 1;
+  while (max - min > 1) {
+    mid = Math.floor(min / 2 + max / 2);
+    if (words[mid].slice(0, prefix.length) === prefix) {
+      return true;
+    }
+    if (words[mid] < prefix) {
+      min = mid;
+    } else {
+      max = mid;
+    }
+  }
+  return false;
+};
+
+hasWord = function(word) {
+  var max, mid, min;
+  min = 0;
+  max = words.length - 1;
+  while (max - min > 1) {
+    mid = Math.floor(min / 2 + max / 2);
+    if (words[mid] === word) {
+      return true;
+    }
+    if (words[mid] < word) {
+      min = mid;
+    } else {
+      max = mid;
+    }
+  }
+  return false;
+};
+
+expand = function(prefix, path) {
+  var matches, nx, ny, path1, prefix1, result, _i, _j, _len, _len1, _ref, _ref1, _ref2;
+  matches = [];
+  if (hasWord(prefix)) {
+    matches.push([prefix, path]);
+  }
+  _ref = neighbors(path[path.length - 1]);
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    _ref1 = _ref[_i], nx = _ref1[0], ny = _ref1[1];
+    if (!inPath([nx, ny], path)) {
+      prefix1 = prefix + grid[ny][nx];
+      if (hasPrefix(prefix)) {
+        path1 = path.concat([[nx, ny]]);
+        _ref2 = expand(prefix1, path1);
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          result = _ref2[_j];
+          matches.push(result);
+        }
+      }
+    }
+  }
+  return matches;
+};
+
+solve = function() {
+  var c, letter, matches, r, result, _i, _j, _k, _len, _len1, _len2, _ref;
+  matches = [];
+  for (r = _i = 0, _len = grid.length; _i < _len; r = ++_i) {
+    row = grid[r];
+    for (c = _j = 0, _len1 = row.length; _j < _len1; c = ++_j) {
+      letter = row[c];
+      _ref = expand(letter, [[c, r]]);
+      for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
+        result = _ref[_k];
+        matches.push(result);
+      }
+    }
+  }
+  return matches;
+};
+
+formatTime = function(msec) {
+  var min, pad, sec;
+  if (msec < 0) {
+    return "Time's Up!";
+  }
+  pad = function(num) {
+    var _i, _ref;
+    for (_i = 0, _ref = 2 - (num + "").length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--) {
+      num = "0" + num;
+    }
+    return num;
+  };
+  sec = Math.floor(msec / 1000);
+  min = Math.floor(sec / 60);
+  return min + ":" + pad(sec % 60);
+};
+
+makeSquare = function(text) {
+  var letter, u, weight;
+  letter = document.createElement('div');
+  letter.className = "square";
+  letter.innerHTML = text.slice(0, 1);
+  weight = document.createElement('div');
+  weight.className = 'weight';
+  weight.innerHTML = weights[text];
+  letter.appendChild(weight);
+  if (text === "QU") {
+    u = document.createElement('span');
+    u.innerHTML = 'u';
+    u.style.fontSize = '20px';
+    letter.appendChild(u);
+  }
+  return letter;
+};
+
+position = function(el) {
+  var left, top;
+  left = 0;
+  top = 0;
+  while (el.offsetParent) {
+    left += el.offsetLeft;
+    top += el.offsetTop;
+    el = el.offsetParent;
+  }
+  return [left, top];
+};
+
+overletter = function(row, col, el) {
+  var c, dx, dy, l, lc, left, line, lr, oldleft, oldtop, r, score, t, text, top, word, _ref, _ref1, _ref2;
+  current_letter = [row, col, el];
+  if (down) {
+    if (!inPath([row, col], path) && (path.length === 0 || isAdjacent([row, col], path[path.length - 1])) && grid[row][col]) {
+      if (path.length !== 0) {
+        _ref = path[path.length - 1], lr = _ref[0], lc = _ref[1];
+        line = document.createElement('div');
+        _ref1 = position(el), left = _ref1[0], top = _ref1[1];
+        _ref2 = [col - lc, row - lr], dx = _ref2[0], dy = _ref2[1];
+        oldleft = left - 74 * dx;
+        oldtop = top - 74 * dy;
+        l = left / 2 + oldleft / 2 + 27;
+        t = top / 2 + oldtop / 2 + 27;
+        if (dy === 1 && dx === -1 || dy === -1 && dx === 1) {
+          line.className = "line ne";
+        }
+        if (dy === 1 && dx === 0 || dy === -1 && dx === 0) {
+          line.className = "line e";
+        }
+        if (dy === 0 && dx === -1 || dy === 0 && dx === 1) {
+          line.className = "line w";
+        }
+        if (dy === -1 && dx === -1 || dy === 1 && dx === 1) {
+          line.className = "line nw";
+        }
+        line.style.top = t + 'px';
+        line.style.left = l + 'px';
+        board.appendChild(line);
+      }
+      path.push([row, col]);
+      document.getElementById('word').innerHTML = '';
+      text = document.createElement('div');
+      text.className = 'word';
+      word = ((function() {
+        var _i, _len, _ref3, _results;
+        _results = [];
+        for (_i = 0, _len = path.length; _i < _len; _i++) {
+          _ref3 = path[_i], r = _ref3[0], c = _ref3[1];
+          _results.push(grid[r][c]);
+        }
+        return _results;
+      })()).join('');
+      text.innerHTML = word;
+      document.getElementById('word').appendChild(text);
+      score = document.createElement('div');
+      score.className = 'score';
+      score.innerHTML = weightWord(word);
+      document.getElementById('word').appendChild(score);
+      return el.className = 'square hover';
+    }
+  }
+};
+
+pointerPress = function() {
+  down = true;
+  document.getElementById('word').innerHTML = '';
+  document.getElementById('word').className = '';
+  if (current_letter) {
+    overletter.apply(this, current_letter);
+  }
+  return current_letter = null;
 };
 
 pointerRelease = function() {
@@ -256,105 +395,53 @@ pointerRelease = function() {
   return current_letter = null;
 };
 
-makeSquare = function(text) {
-  var letter, u, weight;
-  letter = document.createElement('div');
-  letter.className = "square";
-  letter.innerHTML = text.slice(0, 1);
-  weight = document.createElement('div');
-  weight.className = 'weight';
-  weight.innerHTML = weights[text];
-  letter.appendChild(weight);
-  if (text === "QU") {
-    u = document.createElement('span');
-    u.innerHTML = 'u';
-    u.style.fontSize = '20px';
-    letter.appendChild(u);
-  }
-  return letter;
-};
+setInterval(function() {
+  var time, word;
+  time = formatTime(end - new Date);
+  document.getElementById('timer').innerHTML = time;
+  return document.getElementById('score').innerHTML = current_score + '/' + sum((function() {
+    var _i, _len, _ref, _results;
+    _ref = Object.keys(wordmap);
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      word = _ref[_i];
+      _results.push(weightWord(word));
+    }
+    return _results;
+  })());
+}, 1000);
 
-position = function(el) {
-  var left, top;
-  left = 0;
-  top = 0;
-  while (el.offsetParent) {
-    left += el.offsetLeft;
-    top += el.offsetTop;
-    el = el.offsetParent;
-  }
-  return [left, top];
-};
+document.body.addEventListener("mousedown", function(e) {
+  pointerPress();
+  return e.preventDefault();
+});
 
-overletter = function(row, col, el) {
-  var c, dx, dy, l, lc, left, line, lr, oldleft, oldtop, r, score, t, text, top, word, _ref, _ref1, _ref2;
-  current_letter = [row, col, el];
-  if (down) {
-    if (!inPath([row, col], path) && (path.length === 0 || isAdjacent([row, col], path[path.length - 1])) && grid[row][col]) {
-      if (path.length !== 0) {
-        _ref = path[path.length - 1], lr = _ref[0], lc = _ref[1];
-        line = document.createElement('div');
-        line.className = 'line';
-        _ref1 = position(el), left = _ref1[0], top = _ref1[1];
-        _ref2 = [col - lc, row - lr], dx = _ref2[0], dy = _ref2[1];
-        oldleft = left - 74 * dx;
-        oldtop = top - 74 * dy;
-        l = left / 2 + oldleft / 2 + 27;
-        t = top / 2 + oldtop / 2 + 27;
-        if (dy === 1 && dx === -1 || dy === -1 && dx === 1) {
-          line.style.webkitTransform = 'translate(-5px, -27px) rotate(45deg)';
-        }
-        if (dy === 1 && dx === 0 || dy === -1 && dx === 0) {
-          line.style.webkitTransform = 'translate(-5px, -27px) rotate(0deg)';
-        }
-        if (dy === 0 && dx === -1 || dy === 0 && dx === 1) {
-          line.style.webkitTransform = 'translate(-5px, -27px) rotate(-90deg)';
-        }
-        if (dy === -1 && dx === -1 || dy === 1 && dx === 1) {
-          line.style.webkitTransform = 'translate(-5px, -27px) rotate(-45deg)';
-        }
-        line.style.top = t + 'px';
-        line.style.left = l + 'px';
-        board.appendChild(line);
-      }
-      path.push([row, col]);
-      document.getElementById('word').innerHTML = '';
-      text = document.createElement('div');
-      text.className = 'word';
-      word = ((function() {
-        var _i, _len, _ref3, _results;
-        _results = [];
-        for (_i = 0, _len = path.length; _i < _len; _i++) {
-          _ref3 = path[_i], r = _ref3[0], c = _ref3[1];
-          _results.push(grid[r][c]);
-        }
-        return _results;
-      })()).join('');
-      text.innerHTML = word;
-      document.getElementById('word').appendChild(text);
-      score = document.createElement('div');
-      score.className = 'score';
-      score.innerHTML = weightWord(word);
-      document.getElementById('word').appendChild(score);
-      return el.className = 'square hover';
+document.getElementById('board').addEventListener("contextmenu", function(e) {
+  return e.preventDefault();
+});
+
+document.body.addEventListener("touchstart", function(e) {
+  pointerPress();
+  return e.preventDefault();
+});
+
+document.body.addEventListener("touchend", function(e) {
+  return pointerRelease();
+});
+
+document.body.addEventListener("mouseup", function(e) {
+  return pointerRelease();
+});
+
+document.body.addEventListener("touchmove", function(e) {
+  if (e && e.touches && e.touches[0]) {
+    el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    if (el && (el.row != null) && (el.col != null)) {
+      overletter(el.row, el.col, el);
     }
   }
-};
-
-inPath = function(needle, haystack) {
-  var i, _i, _len;
-  for (_i = 0, _len = haystack.length; _i < _len; _i++) {
-    i = haystack[_i];
-    if (i[0] === needle[0] && i[1] === needle[1]) {
-      return true;
-    }
-  }
-  return false;
-};
-
-isAdjacent = function(first, second) {
-  return Math.abs(first[0] - second[0]) <= 1 && Math.abs(first[1] - second[1]) <= 1;
-};
+  return e.preventDefault();
+});
 
 for (r = _i = 0, _len = grid.length; _i < _len; r = ++_i) {
   row = grid[r];
@@ -380,95 +467,3 @@ for (r = _i = 0, _len = grid.length; _i < _len; r = ++_i) {
     _fn(r, c, letter);
   }
 }
-
-neighbors = function(_arg) {
-  var matches, nx, ny, x, y, _k, _l, _ref, _ref1, _ref2, _ref3;
-  x = _arg[0], y = _arg[1];
-  matches = [];
-  for (nx = _k = _ref = Math.max(0, x - 1), _ref1 = Math.min(x + 2, ncols); _ref <= _ref1 ? _k < _ref1 : _k > _ref1; nx = _ref <= _ref1 ? ++_k : --_k) {
-    for (ny = _l = _ref2 = Math.max(0, y - 1), _ref3 = Math.min(y + 2, nrows); _ref2 <= _ref3 ? _l < _ref3 : _l > _ref3; ny = _ref2 <= _ref3 ? ++_l : --_l) {
-      matches.push([nx, ny]);
-    }
-  }
-  return matches;
-};
-
-hasPrefix = function(prefix) {
-  var max, mid, min;
-  if (prefix.length === 1) {
-    return true;
-  }
-  min = 0;
-  max = words.length - 1;
-  while (max - min > 1) {
-    mid = Math.floor(min / 2 + max / 2);
-    if (words[mid].slice(0, prefix.length) === prefix) {
-      return true;
-    }
-    if (words[mid] < prefix) {
-      min = mid;
-    } else {
-      max = mid;
-    }
-  }
-  return false;
-};
-
-hasWord = function(word) {
-  var max, mid, min;
-  min = 0;
-  max = words.length - 1;
-  while (max - min > 1) {
-    mid = Math.floor(min / 2 + max / 2);
-    if (words[mid] === word) {
-      return true;
-    }
-    if (words[mid] < word) {
-      min = mid;
-    } else {
-      max = mid;
-    }
-  }
-  return false;
-};
-
-expand = function(prefix, path) {
-  var matches, nx, ny, path1, prefix1, result, _k, _l, _len2, _len3, _ref, _ref1, _ref2;
-  matches = [];
-  if (hasWord(prefix)) {
-    matches.push([prefix, path]);
-  }
-  _ref = neighbors(path[path.length - 1]);
-  for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
-    _ref1 = _ref[_k], nx = _ref1[0], ny = _ref1[1];
-    if (!inPath([nx, ny], path)) {
-      prefix1 = prefix + grid[ny][nx];
-      if (hasPrefix(prefix)) {
-        path1 = path.concat([[nx, ny]]);
-        _ref2 = expand(prefix1, path1);
-        for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
-          result = _ref2[_l];
-          matches.push(result);
-        }
-      }
-    }
-  }
-  return matches;
-};
-
-solve = function() {
-  var matches, result, _k, _l, _len2, _len3, _len4, _m, _ref;
-  matches = [];
-  for (r = _k = 0, _len2 = grid.length; _k < _len2; r = ++_k) {
-    row = grid[r];
-    for (c = _l = 0, _len3 = row.length; _l < _len3; c = ++_l) {
-      letter = row[c];
-      _ref = expand(letter, [[c, r]]);
-      for (_m = 0, _len4 = _ref.length; _m < _len4; _m++) {
-        result = _ref[_m];
-        matches.push(result);
-      }
-    }
-  }
-  return matches;
-};
