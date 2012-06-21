@@ -6,3 +6,8 @@ Well, it's not going to be that easy especially since I don't use Windows and th
  
 Also, almost all my time now is spent split across Linux computers, so there's not much Windows for me to access and to try to make that app. Though I am technically dual booting with Windows on my home computer, I haven't booted into Windows there for a veritable eternity. 
 
+## Reverse Engineering!
+
+Okay. So how am I going to do that?
+
+scramblewithfriends.zyngawithfriends.com/games?game_type=ScrambleGame&include_invitations=true&get_current_user=true&device_token=fb4ba845%2060ace80d%2050cd9cda%2037c8b9f6%20db3147f2%20790b2ea8%20f1a67f42%20b321f362&moves_since=63043872143&observe=2730193312&chat_messages_since=3217781948&games_since=0001-12-30%2000:00:00+00:00

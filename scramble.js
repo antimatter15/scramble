@@ -69,7 +69,7 @@ weights = {
 };
 
 xhr.onload = function() {
-  var header, list, n, path, word, _i;
+  var header, list, path, word;
   words = xhr.responseText.split('\n');
   header = words.splice(0, 1)[0];
   console.time("blah");
@@ -89,18 +89,7 @@ xhr.onload = function() {
     }
     return _results;
   })();
-  console.timeEnd("blah");
-  for (n = _i = 0; _i <= 20; n = ++_i) {
-    console.log(n, (Object.keys(wordmap).filter(function(e) {
-      return e.length === n;
-    })).length, (list.filter(function(e) {
-      return e.length === n;
-    })).length);
-  }
-  console.log(list.length, Object.keys(wordmap));
-  return document.getElementById('works').innerText = list.sort(function(b, a) {
-    return weightWord(a) - weightWord(b);
-  }).join('\n');
+  return console.timeEnd("blah");
 };
 
 xhr.send(null);
@@ -208,11 +197,29 @@ makeSquare = function(text) {
 };
 
 overletter = function(row, col, el) {
+  var c, r, score, text, word;
   current_letter = [row, col, el];
   if (down) {
     if (!inPath([row, col], path) && (path.length === 0 || isAdjacent([row, col], path[path.length - 1])) && grid[row][col]) {
       path.push([row, col]);
-      document.getElementById('word').appendChild(makeSquare(grid[row][col]));
+      document.getElementById('word').innerHTML = '';
+      text = document.createElement('div');
+      text.className = 'word';
+      word = ((function() {
+        var _i, _len, _ref, _results;
+        _results = [];
+        for (_i = 0, _len = path.length; _i < _len; _i++) {
+          _ref = path[_i], r = _ref[0], c = _ref[1];
+          _results.push(grid[r][c]);
+        }
+        return _results;
+      })()).join('');
+      text.innerText = word;
+      document.getElementById('word').appendChild(text);
+      score = document.createElement('div');
+      score.className = 'score';
+      score.innerText = weightWord(word);
+      document.getElementById('word').appendChild(score);
       return el.className = 'square hover';
     }
   }

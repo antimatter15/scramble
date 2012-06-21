@@ -7,9 +7,9 @@
 
 
 <style>
-.square {
+
+#word, .square {
 	border: 2px solid;
-	width: 50px;
 	height: 40px;
 	padding-top: 4px;
 	padding-bottom: 6px;
@@ -24,6 +24,26 @@
 	border-radius: 10px;
 }
 
+
+#word {
+	padding-right: 7px;
+	padding-left: 7px;
+	margin-bottom: 6px;
+	min-width: 260px;
+	border-color: #B4B4B0;
+	background-color: #E0E0E0;
+}
+
+.word {
+	display: inline;
+}
+
+.square {
+	
+	width: 50px;
+	
+}
+
 .weight {
 	font-size: 10px;
 	float: right;
@@ -32,23 +52,28 @@
 	margin-bottom: -12px;
 }
 
+
+.score {
+	font-size: 10px;
+	display: inline;
+	vertical-align: top;
+}
+
+
 #board .square {
 	margin: 10px;
 }
 
-#word.good .square {
+#word.good {
 	background-color: #CDEECC;
 	border-color: #83DD77;
 }
 
-#word.bad .square {
+#word.bad {
 	background-color: #ECC;
 	border-color: #D77;
 }
 
-#word .square {
-	margin: 2px;
-}
 
 .square.hover {
 	background-color: #eec;
@@ -80,24 +105,39 @@
 	cursor: default;
 }
 
-#word {
-	height: 68px;
+#timer, #score {
+	font-family: sans-serif;
+	vertical-align: middle;
+}
 
-	border-bottom: 2px solid #D5D5D3;
-	margin-bottom: 6px;
+#timer {
+	text-align: left;
+	float: left;
+}
+#score {
+	float: right;
+	text-align: right;
+}
+#pause {
+	float: left;
+}
+#header {
+	height: 30px;
+	width: 260px;
+	clear: both;
 }
 </style>
 
 </head>
 <body>
 <center>
-	<div id="word">
+	<div id="header">
+		<div id="timer">3:16</div>
+		<div id="score">125</div>
 	</div>
-	<div id="board">
-	</div>
+	<div id="word"></div>
+	<div id="board"></div>
 </center>
-
-Green
 
 <div id="works"></div>
 

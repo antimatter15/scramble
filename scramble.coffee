@@ -46,10 +46,10 @@ xhr.onload = ->
 		word
 	)
 	console.timeEnd("blah")
-	for n in [0..20]
-		console.log n, (Object.keys(wordmap).filter (e) -> e.length == n).length, (list.filter (e) -> e.length == n).length
-	console.log list.length, Object.keys(wordmap)
-	document.getElementById('works').innerText = list.sort((b, a) -> weightWord(a) - weightWord(b)).join('\n')
+	# for n in [0..20]
+	# 	console.log n, (Object.keys(wordmap).filter (e) -> e.length == n).length, (list.filter (e) -> e.length == n).length
+	# console.log list.length, Object.keys(wordmap)
+	# document.getElementById('works').innerText = list.sort((b, a) -> weightWord(a) - weightWord(b)).join('\n')
 	
 
 xhr.send null
@@ -134,7 +134,16 @@ overletter = (row, col, el) ->
 	if down
 		if !inPath([row, col], path) and (path.length == 0 or isAdjacent([row, col], path[path.length - 1])) and grid[row][col]
 			path.push [row, col]
-			document.getElementById('word').appendChild makeSquare(grid[row][col])
+			document.getElementById('word').innerHTML = ''
+			text = document.createElement('div')
+			text.className = 'word'
+			word = (grid[r][c] for [r, c] in path).join('')
+			text.innerText = word
+			document.getElementById('word').appendChild text
+			score = document.createElement('div')
+			score.className = 'score'
+			score.innerText = weightWord(word)
+			document.getElementById('word').appendChild score
 			el.className = 'square hover'
 
 inPath = (needle, haystack) ->
